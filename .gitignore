@@ -3,3 +3,4 @@ node_modules/
 .firebase/
 rtings.review.tool/
 product.data.tool/
+.wrangler/
