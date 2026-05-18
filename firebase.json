@@ -1,0 +1,50 @@
+{
+  "functions": {
+    "source": "rtings.review.tool/functions"
+  },
+  "firestore": {
+    "rules": "rtings.review.tool/firestore.rules"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, nofollow"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/sendVerificationCode",
+        "function": "sendVerificationCode"
+      },
+      {
+        "source": "/verifyCode",
+        "function": "verifyCode"
+      },
+      {
+        "source": "/rtings/**",
+        "destination": "/rtings/index.html"
+      }
+    ]
+  }
+}
