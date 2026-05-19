@@ -1,1 +1,4 @@
+/rtings/ /rtings/index.html 200
 /rtings/* /rtings/index.html 200
+/rtings/*/* /rtings/index.html 200
+/rtings/*/*/* /rtings/index.html 200
