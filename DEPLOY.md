@@ -7,7 +7,7 @@ openclawtvos.com
 ├── Cloudflare Pages（静态托管）
 │   ├── /                    → Landing Page（入口）
 │   ├── /rtings/             → Rtings Review Tool（SPA）
-│   └── /product/            → Product Data Tool（占位页）
+│   └── /product/            → Product Data Tool（建设中）
 │
 └── Cloudflare Workers（认证 API）
     ├── POST /api/send-code  → 发送邮箱验证码
@@ -33,6 +33,35 @@ openclawtvos.com
 
 ## 部署流程
 
+### 部署主页 / 静态页面（自动）
+
+已配置 GitHub Actions CI/CD，push 到 `main` 分支且 `public/` 目录有变更时自动触发部署。
+
+Workflow 文件：`.github/workflows/deploy.yml`
+
+需要配置的 GitHub Secrets（Settings → Secrets and variables → Actions）：
+
+| Secret | 说明 |
+|--------|------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token（需要 Pages 编辑权限） |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare 账号 ID |
+
+日常操作只需：
+
+```bash
+# 编辑 public/ 下的文件后
+git add public/
+git commit -m "update xxx"
+git push origin main
+# GitHub Actions 自动部署到 Cloudflare Pages
+```
+
+如需手动部署：
+
+```bash
+npx wrangler pages deploy public --project-name openclawtvos-site
+```
+
 ### 部署 Rtings 应用
 
 ```bash
@@ -41,9 +70,12 @@ cd rtings.review.tool
 npm run build
 
 # 2. 构建产物自动复制到 website.work/public/rtings/
-# 3. 在 website.work 仓库中部署到 Cloudflare Pages
+# 3. 在 website.work 仓库中提交并推送
 cd ../
-npx wrangler pages deploy public --project-name openclawtvos-site
+git add public/rtings/
+git commit -m "update rtings app"
+git push origin main
+# CI/CD 自动部署
 ```
 
 ### 部署 Worker 认证服务
@@ -52,14 +84,6 @@ npx wrangler pages deploy public --project-name openclawtvos-site
 cd rtings.review.tool/worker
 npm install        # 首次或依赖变更时
 npx wrangler deploy
-```
-
-### 部署主页或 Product 占位页
-
-直接编辑 `website.work/public/` 下的 HTML 文件，然后：
-
-```bash
-npx wrangler pages deploy public --project-name openclawtvos-site
 ```
 
 ## Worker 环境变量
@@ -101,20 +125,18 @@ npx wrangler pages deploy public --project-name openclawtvos-site
 
 ### 环境准备
 
-1. clone 仓库：`git clone https://github.com/zengxh59/rts.tool.git`
-2. 安装依赖：`npm install`
-3. 无需任何环境变量或 `.env` 文件（认证由 Cloudflare Workers 处理）
+1. clone 仓库：`git clone https://github.com/zengxh59/website.work.git`
+2. 无需安装依赖或 `.env` 文件（认证由 Cloudflare Workers 处理）
 
 ### 本地开发
 
-```bash
-npm run dev    # 启动前端开发服务器 (localhost:5173)
-```
+直接编辑 `public/` 下的 HTML 文件，推送后 CI/CD 自动部署。
 
-注意：本地开发时认证 API 不可用（Worker 运行在 Cloudflare 边缘）。可用 `wrangler dev` 单独启动 Worker 进行调试。
+注意：认证 API 仅在 Cloudflare 边缘可用，本地开发时不可用。可用 `wrangler dev` 单独启动 Worker 调试。
 
 ### 权限
 
 - **代码提交**：GitHub 仓库 collaborator 权限
-- **部署**：需要 Cloudflare 账号（`zengxh59@gmail.com`）的 Workers/Pages 操作权限
-- **Worker Secrets**：仅账号管理员可查看/修改
+- **部署**：通过 GitHub Actions 自动完成，无需 Cloudflare 账号权限
+- **GitHub Secrets 管理**：仓库 admin 权限
+- **Worker Secrets**：仅 Cloudflare 账号管理员可查看/修改
